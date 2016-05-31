@@ -30,12 +30,7 @@ class Application extends BaseApplication
     /**
      * @var string
      */
-    const VERSION = '1.0.0-alpha2';
-
-    /**
-     * @var string
-     */
-    const DRUPAL_SUPPORTED_VERSION = '8.1.x';
+    const VERSION = '1.0.0-beta1';
 
     /**
      * @var string
@@ -347,9 +342,7 @@ class Application extends BaseApplication
         );
 
         foreach ($autoWireForcedCommands as $autoWireForcedCommand) {
-            $command = new $autoWireForcedCommand['class'](
-                $autoWireForcedCommand['helperset']?$this->getHelperSet():null
-            );
+            $command = new $autoWireForcedCommand['class'];
             $this->add($command);
         }
 
@@ -361,9 +354,12 @@ class Application extends BaseApplication
         );
 
         if ($autoWireNameCommand) {
-            $command = new $autoWireNameCommand['class'](
-                $autoWireNameCommand['helperset']?$this->getHelperSet():null
-            );
+            $command = new $autoWireNameCommand['class'];
+
+            if (method_exists($command, 'setTranslator')) {
+                $command->setTranslator($this->container->get('translator'));
+            }
+
             $this->add($command);
         }
 

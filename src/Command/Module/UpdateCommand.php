@@ -7,21 +7,19 @@
 
 namespace Drupal\Console\Command\Module;
 
+use Drupal\Console\Command\Shared\CommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Drupal\Console\Command\Command;
+use Symfony\Component\Console\Command\Command;
 use Drupal\Console\Style\DrupalStyle;
 use Drupal\Console\Command\ProjectDownloadTrait;
-use Drupal\Console\Command\PHPProcessTrait;
 
 class UpdateCommand extends Command
 {
+    use CommandTrait;
     use ProjectDownloadTrait;
-    use PHPProcessTrait;
-
-    protected $stable = true;
 
     protected function configure()
     {
@@ -100,14 +98,15 @@ class UpdateCommand extends Command
         }
 
         if ($composer) {
-            $this->setComposerRepositories($io);
-            $command = 'composer update ' . $modules . ' -o --prefer-dist --no-dev --root-reqs ';
+            $this->setComposerRepositories();
+            $command = 'composer update ' . $modules . ' --optimize-autoloader --prefer-dist --no-dev --root-reqs ';
 
             if ($simulate) {
                 $command .= " --dry-run";
             }
 
-            if ($this->execProcess($command)) {
+            $shellProcess = $this->get('shell_process');
+            if ($shellProcess->exec($command)) {
                 $io->success(
                     $this->trans('commands.module.update.messages.composer')
                 );

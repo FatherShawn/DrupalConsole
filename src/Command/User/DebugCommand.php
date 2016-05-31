@@ -7,19 +7,21 @@
 
 namespace Drupal\Console\Command\User;
 
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Drupal\Console\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
+use Drupal\Console\Command\Shared\ContainerAwareCommandTrait;
 use Drupal\Console\Style\DrupalStyle;
 
 /**
  * Class DebugCommand
  * @package Drupal\Console\Command\User
  */
-class DebugCommand extends ContainerAwareCommand
+class DebugCommand extends Command
 {
+    use ContainerAwareCommandTrait;
+
     /**
      * {@inheritdoc}
      */
@@ -73,11 +75,11 @@ class DebugCommand extends ContainerAwareCommand
         $usernames = $this->splitOption($input->getOption('username'));
         $mails = $this->splitOption($input->getOption('mail'));
 
-        $entityTypeManager = $this->getService('entity_type.manager');
+        $entityTypeManager = $this->getDrupalService('entity_type.manager');
         $userStorage = $entityTypeManager->getStorage('user');
-        $systemRoles = $this->getDrupalApi()->getRoles();
+        $systemRoles = $this->getApplication()->getDrupalApi()->getRoles();
 
-        $entityQuery = $this->getEntityQuery();
+        $entityQuery = $this->getDrupalService('entity.query');
         $query = $entityQuery->get('user');
         $query->condition('uid', 0, '>');
         $query->sort('uid');
@@ -85,23 +87,23 @@ class DebugCommand extends ContainerAwareCommand
 
         // uid as option
         if (is_array($uids) && $uids) {
-          $group = $query->andConditionGroup()
-            ->condition('uid', $uids, 'IN');
-          $query->condition($group);
+            $group = $query->andConditionGroup()
+                ->condition('uid', $uids, 'IN');
+            $query->condition($group);
         }
 
         // username as option
         if (is_array($usernames) && $usernames) {
-          $group = $query->andConditionGroup()
-            ->condition('name', $usernames, 'IN');
-          $query->condition($group);
+            $group = $query->andConditionGroup()
+                ->condition('name', $usernames, 'IN');
+            $query->condition($group);
         }
 
         // mail as option
         if (is_array($mails) && $mails) {
-          $group = $query->andConditionGroup()
-            ->condition('mail', $mails, 'IN');
-          $query->condition($group);
+            $group = $query->andConditionGroup()
+                ->condition('mail', $mails, 'IN');
+            $query->condition($group);
         }
 
         if ($roles) {
@@ -137,11 +139,12 @@ class DebugCommand extends ContainerAwareCommand
     }
 
     //@TODO: this should be in src/Command/Shared/CommandTrait.php
-    function splitOption($option) {
-        if (1 == count($option) && strpos($option[0], " ") >= 1 ){
-          return explode(" ", $option[0]);
-        }else{
-          return $option;
+    public function splitOption($option)
+    {
+        if (1 == count($option) && strpos($option[0], " ") >= 1) {
+            return explode(" ", $option[0]);
+        } else {
+            return $option;
         }
     }
 }

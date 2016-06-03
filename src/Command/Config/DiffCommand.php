@@ -19,19 +19,6 @@ use Drupal\Console\Style\DrupalStyle;
 class DiffCommand extends Command
 {
     use ContainerAwareCommandTrait;
-    /**
-     * A static array map of operations -> color strings.
-     *
-     * @see http://symfony.com/doc/current/components/console/introduction.html#coloring-the-output
-     *
-     * @var array
-     */
-    protected static $operationColours = [
-        'delete' => '<fg=red>%s</fg=red>',
-        'update' => '<fg=yellow>%s</fg=yellow>',
-        'create' => '<fg=green>%s</fg=green>',
-        'default' => '%s',
-    ];
 
     /**
      * {@inheritdoc}
@@ -81,29 +68,16 @@ class DiffCommand extends Command
     {
         $io = new DrupalStyle($input, $output);
         $directory = $input->getArgument('directory');
-        $source_storage = new FileStorage($directory);
-        $active_storage = $this->getDrupalService('config.storage');
-        $config_manager = $this->getDrupalService('config.manager');
-
-        if ($input->getOption('reverse')) {
-            $config_comparer = new StorageComparer($source_storage, $active_storage, $config_manager);
-        } else {
-            $config_comparer = new StorageComparer($active_storage, $source_storage, $config_manager);
-        }
-        if (!$config_comparer->createChangelist()->hasChanges()) {
+        $changes = $this->getChangelist($directory, $input->getOption('reverse'));
+        if (!$changes['changed']) {
             $output->writeln($this->trans('commands.config.diff.messages.no-changes'));
+            return;
         }
-
-        $change_list = [];
-        foreach ($config_comparer->getAllCollectionNames() as $collection) {
-            $change_list[$collection] = $config_comparer->getChangelist(null, $collection);
-        }
-
-        $this->outputDiffTable($io, $change_list);
+        $this->outputDiffTable($io, $changes['list']);
     }
 
     /**
-     * Ouputs a table of configuration changes.
+     * Outputs a table of configuration changes.
      *
      * @param DrupalStyle $io
      *   The io.
@@ -124,11 +98,40 @@ class DiffCommand extends Command
                     $rows[] = [
                         $collection,
                         $config,
-                        sprintf(self::$operationColours[$operation], $operation),
+                        sprintf("<$operation>%s</$operation>", $operation),
                     ];
                 }
             }
         }
         $io->table($header, $rows);
     }
+
+  /**
+   * @param string $directory
+   *   The directory of config files to diff against.
+   * @param boolean $reverse
+   *   Should the diff be reversed?
+   *
+   * @return array
+   */
+  public function getChangelist( $directory, $reverse = FALSE) {
+    $result = [];
+    $source_storage = new FileStorage($directory);
+    $active_storage = $this->getDrupalService('config.storage');
+    $config_manager = $this->getDrupalService('config.manager');
+
+    if ($reverse) {
+      $config_comparer = new StorageComparer($source_storage, $active_storage, $config_manager);
+    }
+    else {
+      $config_comparer = new StorageComparer($active_storage, $source_storage, $config_manager);
+    }
+    $result['changed'] = $config_comparer->createChangelist()->hasChanges();
+
+    $result['list'] = [];
+    foreach ($config_comparer->getAllCollectionNames() as $collection) {
+      $result['list'][$collection] = $config_comparer->getChangelist(NULL, $collection);
+    }
+    return $result;
+  }
 }

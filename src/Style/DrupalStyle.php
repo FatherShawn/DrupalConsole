@@ -4,6 +4,7 @@ namespace Drupal\Console\Style;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -18,20 +19,29 @@ class DrupalStyle extends SymfonyStyle
     private $input;
 
     /**
-     * @param InputInterface  $input
+     * @param InputInterface $input
      * @param OutputInterface $output
+     * 
+     * @see http://symfony.com/doc/current/components/console/introduction.html#coloring-the-output
      */
     public function __construct(InputInterface $input, OutputInterface $output)
     {
         $this->input = $input;
+        // Define custom styles
+        $delete_style = new OutputFormatterStyle('red');
+        $output->getFormatter()->setStyle('delete', $delete_style);
+        $update_style = new OutputFormatterStyle('yellow');
+        $output->getFormatter()->setStyle('update', $update_style);
+        $create_style = new OutputFormatterStyle('green');
+        $output->getFormatter()->setStyle('create', $create_style);
         parent::__construct($input, $output);
     }
 
     /**
      * @param string $question
-     * @param array  $choices
-     * @param mixed  $default
-     * @param bool   $allowEmpty
+     * @param array $choices
+     * @param mixed $default
+     * @param bool $allowEmpty
      *
      * @return string
      */
@@ -97,7 +107,7 @@ class DrupalStyle extends SymfonyStyle
     }
 
     /**
-     * @param string        $question
+     * @param string $question
      * @param null|callable $validator
      *
      * @return string

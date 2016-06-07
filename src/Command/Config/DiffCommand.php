@@ -82,7 +82,7 @@ class DiffCommand extends Command
      *
      * @param DrupalStyle $io
      *   The io.
-     * @param array       $change_list
+     * @param array $change_list
      *   The list of changes from the StorageComparer.
      */
     protected function outputDiffTable(DrupalStyle $io, array $change_list)
@@ -107,33 +107,32 @@ class DiffCommand extends Command
         $io->table($header, $rows);
     }
 
-  /**
-   * @param string $directory
-   *   The directory of config files to diff against.
-   * @param boolean $reverse
-   *   Should the diff be reversed?
-   *
-   * @return \Drupal\Console\Utils\ChangeList
-   */
-  public function getChangelist( $directory, $reverse = FALSE) {
-    $result = [];
-    $source_storage = new FileStorage($directory);
-    $active_storage = $this->getDrupalService('config.storage');
-    $config_manager = $this->getDrupalService('config.manager');
+    /**
+     * @param string $directory
+     *   The directory of config files to diff against.
+     * @param boolean $reverse
+     *   Should the diff be reversed?
+     *
+     * @return \Drupal\Console\Utils\ChangeList
+     */
+    public function getChangelist($directory, $reverse = false)
+    {
+        $source_storage = new FileStorage($directory);
+        $active_storage = $this->getDrupalService('config.storage');
+        $config_manager = $this->getDrupalService('config.manager');
 
-    if ($reverse) {
-      $config_comparer = new StorageComparer($source_storage, $active_storage, $config_manager);
-    }
-    else {
-      $config_comparer = new StorageComparer($active_storage, $source_storage, $config_manager);
-    }
-    $result['changed'] = $config_comparer->createChangelist()->hasChanges();
+        if ($reverse) {
+            $config_comparer = new StorageComparer($source_storage, $active_storage, $config_manager);
+        } else {
+            $config_comparer = new StorageComparer($active_storage, $source_storage, $config_manager);
+        }
+        $result['changed'] = $config_comparer->createChangelist()->hasChanges();
 
-    $result['list'] = [];
-    foreach ($config_comparer->getAllCollectionNames() as $collection) {
-      $result['list'][$collection] = $config_comparer->getChangelist(NULL, $collection);
+        $list = [];
+        foreach ($config_comparer->getAllCollectionNames() as $collection) {
+            $list[$collection] = $config_comparer->getChangelist(null, $collection);
+        }
+        //$test = new ChangeList($config_comparer->createChangelist()->hasChanges(), $result['list']);
+        return new ChangeList($config_comparer->createChangelist()->hasChanges(), $list);
     }
-      //$test = new ChangeList($config_comparer->createChangelist()->hasChanges(), $result['list']);
-    return new ChangeList($config_comparer->createChangelist()->hasChanges(), $result['list']);
-  }
 }

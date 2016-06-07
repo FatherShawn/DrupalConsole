@@ -15,6 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
 use Drupal\Console\Command\Shared\ContainerAwareCommandTrait;
 use Drupal\Console\Style\DrupalStyle;
+use Drupal\Console\Utils\ChangeList;
 
 class DiffCommand extends Command
 {
@@ -69,11 +70,11 @@ class DiffCommand extends Command
         $io = new DrupalStyle($input, $output);
         $directory = $input->getArgument('directory');
         $changes = $this->getChangelist($directory, $input->getOption('reverse'));
-        if (!$changes['changed']) {
+        if (!$changes->hasChanges) {
             $output->writeln($this->trans('commands.config.diff.messages.no-changes'));
             return;
         }
-        $this->outputDiffTable($io, $changes['list']);
+        $this->outputDiffTable($io, $changes->items);
     }
 
     /**
@@ -112,7 +113,7 @@ class DiffCommand extends Command
    * @param boolean $reverse
    *   Should the diff be reversed?
    *
-   * @return array
+   * @return \Drupal\Console\Utils\ChangeList
    */
   public function getChangelist( $directory, $reverse = FALSE) {
     $result = [];
@@ -132,6 +133,7 @@ class DiffCommand extends Command
     foreach ($config_comparer->getAllCollectionNames() as $collection) {
       $result['list'][$collection] = $config_comparer->getChangelist(NULL, $collection);
     }
-    return $result;
+      //$test = new ChangeList($config_comparer->createChangelist()->hasChanges(), $result['list']);
+    return new ChangeList($config_comparer->createChangelist()->hasChanges(), $result['list']);
   }
 }

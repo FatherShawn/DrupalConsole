@@ -203,4 +203,58 @@ class DrupalStyle extends SymfonyStyle
         $message = sprintf('// %s', $message);
         parent::text($message);
     }
+
+    /**
+     * Formats message about data to be deleted.
+     *
+     * @param string|array $message
+     *   The text to format.
+     * @param boolean $newLine
+     *   Output on a new line?
+     */
+    public function delete($message, $newLine = true)
+    {
+        $message = sprintf('<delete> %s</delete>', $message);
+        if ($newLine) {
+            $this->writeln($message);
+        } else {
+            $this->write($message);
+        }
+    }
+
+    /**
+     * Formats message about data to be updated.
+     *
+     * @param string|array $message
+     *   The text to format.
+     * @param boolean $newLine
+     *   Output on a new line?
+     */
+    public function update($message, $newLine = true)
+    {
+        $message = sprintf('<update> %s</update>', $message);
+        if ($newLine) {
+            $this->writeln($message);
+        } else {
+            $this->write($message);
+        }
+    }
+
+    /**
+     * Formats message about data to be created.
+     *
+     * @param string|array $message
+     *   The text to format.
+     * @param boolean $newLine
+     *   Output on a new line?
+     */
+    public function create($message, $newLine = true)
+    {
+        $message = sprintf('<create> %s</create>', $message);
+        if ($newLine) {
+            $this->writeln($message);
+        } else {
+            $this->write($message);
+        }
+    }
 }

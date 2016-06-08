@@ -126,10 +126,11 @@ class DiffCommand extends Command
         } else {
             $config_comparer = new StorageComparer($active_storage, $source_storage, $config_manager);
         }
+        $config_comparer->createChangelist();
         $list = [];
         foreach ($config_comparer->getAllCollectionNames() as $collection) {
             $list[$collection] = $config_comparer->getChangelist(null, $collection);
         }
-        return new ChangeList($config_comparer->createChangelist()->hasChanges(), $list);
+        return new ChangeList($config_comparer->hasChanges(), $list);
     }
 }

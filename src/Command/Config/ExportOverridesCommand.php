@@ -16,20 +16,6 @@ use Drupal\Console\Style\DrupalStyle;
 class ExportOverridesCommand extends Command
 {
   use ContainerAwareCommandTrait;
-
-  /**
-   * A static array map of operations -> color strings.
-   *
-   * @see http://symfony.com/doc/current/components/console/introduction.html#coloring-the-output
-   *
-   * @var array
-   */
-  protected static $operationColours = [
-    'delete' => '<fg=red>%s</fg=red>',
-    'update' => '<fg=yellow>%s</fg=yellow>',
-    'create' => '<fg=green>%s</fg=green>',
-    'default' => '%s',
-  ];
   
   /**
    * {@inheritdoc}

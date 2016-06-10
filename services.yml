@@ -38,3 +38,5 @@ services:
   shell_process:
     class: Drupal\Console\Utils\ShellProcess
     arguments: ["@site", '@config']
+  config_compare:
+    class: Drupal\Console\Utils\ConfigCompare

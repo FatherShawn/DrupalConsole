@@ -6,8 +6,6 @@
 
 namespace Drupal\Console\Command\Config;
 
-use Drupal\Core\Config\FileStorage;
-use Drupal\Core\Config\StorageComparer;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -15,7 +13,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
 use Drupal\Console\Command\Shared\ContainerAwareCommandTrait;
 use Drupal\Console\Style\DrupalStyle;
-use Drupal\Console\Utils\ChangeList;
 
 class DiffCommand extends Command
 {
@@ -67,9 +64,10 @@ class DiffCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $config_diff = $this->get('config_compare');
         $io = new DrupalStyle($input, $output);
         $directory = $input->getArgument('directory');
-        $changes = $this->getChangelist($directory, $input->getOption('reverse'));
+        $changes = $config_diff->getChangelist($directory, $input->getOption('reverse'));
         if (!$changes->hasChanges) {
             $output->writeln($this->trans('commands.config.diff.messages.no-changes'));
             return;
@@ -107,30 +105,4 @@ class DiffCommand extends Command
         $io->table($header, $rows);
     }
 
-    /**
-     * @param string $directory
-     *   The directory of config files to diff against.
-     * @param boolean $reverse
-     *   Should the diff be reversed?
-     *
-     * @return \Drupal\Console\Utils\ChangeList
-     */
-    public function getChangelist($directory, $reverse = false)
-    {
-        $source_storage = new FileStorage($directory);
-        $active_storage = $this->getDrupalService('config.storage');
-        $config_manager = $this->getDrupalService('config.manager');
-
-        if ($reverse) {
-            $config_comparer = new StorageComparer($source_storage, $active_storage, $config_manager);
-        } else {
-            $config_comparer = new StorageComparer($active_storage, $source_storage, $config_manager);
-        }
-        $config_comparer->createChangelist();
-        $list = [];
-        foreach ($config_comparer->getAllCollectionNames() as $collection) {
-            $list[$collection] = $config_comparer->getChangelist(null, $collection);
-        }
-        return new ChangeList($config_comparer->hasChanges(), $list);
-    }
 }

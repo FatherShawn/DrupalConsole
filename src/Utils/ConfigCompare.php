@@ -8,15 +8,13 @@
 
 namespace Drupal\Console\Utils;
 
-use Drupal\Console\Command\Shared\ContainerAwareCommandTrait;
+use Drupal\Console\Command\Site\StatusCommand;
 use Drupal\Console\Utils\ChangeList;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Config\StorageComparer;
 
 class ConfigCompare
 {
-    use ContainerAwareCommandTrait;
-
     /**
      * @var \Drupal\Core\Config\CachedStorage
      */
@@ -27,10 +25,10 @@ class ConfigCompare
      */
     protected $configManager;
 
-    function __construct()
+    function __construct(StatusCommand $site)
     {
-        $this->activeStorage = $this->getDrupalService('config.storage');
-        $this->configManager = $this->getDrupalService('config.manager');
+        $this->activeStorage = $site->getDrupalService('config.storage');
+        $this->configManager = $site->getDrupalService('config.manager');
     }
 
     /**

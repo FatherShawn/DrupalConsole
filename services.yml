@@ -40,3 +40,4 @@ services:
     arguments: ["@site", '@config']
   config_compare:
     class: Drupal\Console\Utils\ConfigCompare
+    arguments: ["@site_status"]

@@ -64,8 +64,8 @@ class DiffCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $config_diff = $this->get('config_compare');
         $io = new DrupalStyle($input, $output);
+        $config_diff = $this->get('config_compare');
         $directory = $input->getArgument('directory');
         $changes = $config_diff->getChangelist($directory, $input->getOption('reverse'));
         if (!$changes->hasChanges) {

@@ -15,33 +15,45 @@ use Drupal\Console\Style\DrupalStyle;
 
 class ExportOverridesCommand extends Command
 {
-  use ContainerAwareCommandTrait;
-  
-  /**
-   * {@inheritdoc}
-   */
-  protected function configure()
-  {
-    $this->setName('config:export:overrides')
-      ->setDescription($this->trans('commands.config.export.overrides.description'))
-      ->addOption(
-        'directory',
-        null,
-        InputOption::VALUE_OPTIONAL,
-        $this->trans('commands.config.export.overrides.arguments.directory')
-      );
-  }
-  /**
-   * {@inheritdoc}
-   */
-  protected function interact(InputInterface $input, OutputInterface $output)
-  {
-  }
-  /**
-   * {@inheritdoc}
-   */
-  protected function execute(InputInterface $input, OutputInterface $output)
-  {
-    $io = new DrupalStyle($input, $output);
-  }
+    use ContainerAwareCommandTrait;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure()
+    {
+        $this->setName('config:export:overrides')
+            ->setDescription($this->trans('commands.config.export.overrides.description'))
+            ->addArgument(
+                'directory',
+                null,
+                InputArgument::REQUIRED
+            );
+    }
+
+//    /**
+//     * {@inheritdoc}
+//     */
+//    protected function interact(InputInterface $input, OutputInterface $output)
+//    {
+//    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        global $config_directories;
+        $io = new DrupalStyle($input, $output);
+        $config_diff = $this->get('config_compare');
+        // The directory argument is the target directory for storing the overrides.
+        $directory = $input->getArgument('directory');
+        // We always diff against the 'sync' directory, which is considered base config.
+        $changes = $config_diff->getChangelist($config_directories[CONFIG_SYNC_DIRECTORY], false);
+        if (!$changes->hasChanges) {
+            $output->writeln($this->trans('commands.config.diff.messages.no-changes'));
+            return;
+        }
+        // Iterate changes.
+    }
 }

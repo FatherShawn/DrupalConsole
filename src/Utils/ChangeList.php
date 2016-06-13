@@ -53,4 +53,5 @@ class ChangeList
                 throw new \InvalidArgumentException;
         }
     }
+
 }
